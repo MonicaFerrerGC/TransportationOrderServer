@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: transportationorderserver-dpl
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: transportationorderserver
+  template:
+    metadata:
+      labels:
+        app: transportationorderserver
+    spec:
+      containers:
+        - name: transportationorderserver
+          image: ghcr.io/monicaferrergc/tos:latest
+          ports:
+            - containerPort: 8080
+      imagePullSecrets:
+        - name: github-registry
