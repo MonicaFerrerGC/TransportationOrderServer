@@ -83,3 +83,121 @@ jobs:
           push: true
 
           tags: ghcr.io/monicaferrergc/tos:latest
+deploy:
+
+    needs: verify-and-package
+
+    runs-on: ubuntu-latest
+
+    permissions:
+
+      contents: 'read'
+
+      id-token: 'write'
+
+    steps:
+
+    - uses: actions/checkout@v3
+
+    - id: 'auth'
+
+      uses: 'google-github-actions/auth@v1'
+
+      with:
+
+        credentials_json: '${{ secrets.GCLOUD_SA }}'
+
+    - id: 'get-credentials'
+
+      uses: 'google-github-actions/get-gke-credentials@v1'
+
+      with:
+
+        cluster_name: 'apsv-24'
+
+        location: 'us-central1'
+
+    # The KUBECONFIG env var is automatically exported and picked up by kubectl.
+
+    - id: 'deployment-mypod'
+
+      run: 'kubectl create secret docker-registry github-registry --docker-server="ghcr.io" --docker-username="monicaferrergc" --docker-password="${{ secrets.PAT }}" --docker-email="youremail" -o yaml --dry-run=client | kubectl apply -f -'
+
+    - run: 'kubectl apply -f deployment.yaml'
+
+    - run: 'kubectl get deployments'
+
+    - run: 'kubectl get pods'
+
+apiVersion: v1
+
+kind: Service
+
+metadata:
+
+  name: transportationorderserver-srv
+
+spec:
+
+  selector:
+
+    app: transportationorderserver
+
+  ports:
+
+  - protocol: TCP
+
+    port: 80
+
+    targetPort: 8080
+
+  type: LoadBalancer
+
+---
+
+apiVersion: apps/v1
+
+kind: Deployment
+
+metadata:
+
+  name: transportationorderserver-dpl
+
+  labels:
+
+    app: transportationorderserver
+
+spec:
+
+  replicas: 1
+
+  selector:
+
+    matchLabels:
+
+      app: transportationorderserver
+
+  template:
+
+    metadata:
+
+      labels:
+
+        app: transportationorderserver
+
+    spec:
+
+      containers:
+
+      - name: transportationorderserver
+
+        image: ghcr.io/monicaferrergc/tos
+
+        ports:
+
+        - containerPort: 8080
+
+      imagePullSecrets:
+
+      - name: github-registry
+
