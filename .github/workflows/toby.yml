@@ -121,7 +121,7 @@ deploy:
 
     - id: 'deployment-mypod'
 
-      run: 'kubectl create secret docker-registry github-registry --docker-server="ghcr.io" --docker-username="monicaferrergc" --docker-password="${{ secrets.PAT }}" --docker-email="youremail" -o yaml --dry-run=client | kubectl apply -f -'
+      run: 'kubectl create secret docker-registry github-registry --docker-server="ghcr.io" --docker-username="monicaferrergc" --docker-password="${{ secrets.PAT }}" --docker-email="monica.ferrergc@gmail.com" -o yaml --dry-run=client | kubectl apply -f -'
 
     - run: 'kubectl apply -f deployment.yaml'
 
